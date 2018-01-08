@@ -18,7 +18,14 @@ def hello_name(yourname):
 
 @app.route('/itunes/<artist>')
 def hello_artist(artist):
-    return '<h1>Hello, {}</h1>'.format(artist)
+    artist = artist.replace(' ', '+')
+    url = 'https://itunes.apple.com/search?term={}'.format(artist)
+    r = requests.get(url)
+    artist_info_dump = r.json()
+    song_list=[]
+    for a in artist_info_dump['results']:
+        song_list.append(a['trackName'])
+    return '<p>{}</p>'.format(song_list)
 
 
 
