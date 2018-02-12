@@ -1,0 +1,15 @@
+<html>
+<title>
+</title>
+<body>
+<form method = "POST" action="/addMovie">
+  {{ form.hidden_tag() }}
+  {% for message in get_flashed_messages() %}
+  {{ message }}
+  {% endfor %}
+<h3>{{form.movie_name.label}} {{ form.movie_name() }}</h3>
+<h3>{{form.director_name.label}} {{ form.director_name() }}</h3>
+{{ form.submit() }}
+</form>
+</body>
+</html>

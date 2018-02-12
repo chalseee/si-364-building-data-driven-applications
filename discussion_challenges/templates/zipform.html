@@ -1,0 +1,7 @@
+<html>
+	<form action="post" method="{{url_for("zip")}}">
+		{{form.hidden_tag()}}
+		{{form.zip_code.label}} {{form.zip_code()}}
+		{{form.submit()}}
+	</form>
+</html>
