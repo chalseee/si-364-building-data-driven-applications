@@ -20,7 +20,7 @@ app.use_reloader = True
 
 ## All app.config values
 app.config['SECRET_KEY'] = 'eahfpfoheqwfij'
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:icedout@localhost:5432/364midterm"
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:icedout@localhost:5432/364"
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -31,7 +31,29 @@ db = SQLAlchemy(app)
 ######## HELPER FXNS (If any) ########
 ######################################
 url = "https://api.themoviedb.org/3/search/person?api_key=a55c954f4c5cb767bed20229fc253426&query="
-# data = requests.get("https://api.themoviedb.org/3/search/person?api_key=a55c954f4c5cb767bed20229fc253426&query=lupita+nyongo").json()['results'][0]
+
+def get_or_create_movie(title, release_date, description):
+    movie = db.session.query(Movie).filter_by(title=title).first()
+    if movie:
+        print(movie)
+    else:
+        movie = Movie(title=title, release_date=release_date, description=description)
+        db.session.add(movie)
+        db.session.commit()
+        print(movie)
+
+
+def get_or_create_actor(name, popularity, movie_title):
+    actor = db.session.query(Actor).filter_by(name=name).first()
+    if actor:
+        print(actor)
+    else:
+        actor = Actor(name=name, popularity=popularity)
+        top_movie_id = db.session.query(Movie).filter_by(title=movie_title).first().id
+        actor.top_movie_id = top_movie_id
+        db.session.add(actor)
+        db.session.commit()
+        print(actor)
 
 ##################
 ##### MODELS #####
@@ -51,7 +73,7 @@ class Movie(db.Model):
     description = db.Column(db.String(2000))
     rel = db.relationship('Actor', backref='Movies')
     def __repr__(self):
-        return "Movie: {}".format(self.title)
+        return "Movie: {0} \nReleased: {1} \nDescription: {2} \n\n".format(self.title, self.release_date, self.description)
 
 class Actor(db.Model):
     __tablename__ = "actors"
@@ -90,6 +112,14 @@ class StatsForm(FlaskForm):
 #######################
 ###### VIEW FXNS ######
 #######################
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'), 500
+
 @app.route('/', methods=['GET'])
 def home():
     form = NameForm() # User should be able to enter name after name and each one will be saved, even if it's a duplicate! Sends data with GET
@@ -107,20 +137,20 @@ def all_names():
 @app.route('/movies', methods=['GET', 'POST'])
 def all_movies():
     form = MovieForm()
-    if form.validate_on_submit():
-        query = requests.get(url + form.actor.data.replace(" ", "+")).json()['results']
-        if query == []:
+    if request.method == "POST" and form.validate_on_submit():
+        query = requests.get(url + form.actor.data.replace(" ", "+")).json()
+        if query['total_results'] == 0 or query['results'][0]['known_for'] == []:
             return render_template("500.html"), 500
 
-        query = query[0]
-        actor = Actor(name=query['name'], popularity=query['popularity'])
-        db.session.add(actor)
-        db.session.commit()
+        query = query['results'][0]
+        movie_info = query['known_for'][0]
+        get_or_create_movie(movie_info['title'], movie_info['release_date'], movie_info['overview'])
+        get_or_create_actor(query['name'], query['popularity'], movie_info['title'])
     return render_template('movies.html', form=form, movies=Movie.query.all())
 
 @app.route('/stats')
 def stats():
-    return render_template('stats.html')
+    return render_template('stats.html', actors=Actor.query.all())
 
 
 ## Code to run the application...
