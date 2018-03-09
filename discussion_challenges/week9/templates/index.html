@@ -1,0 +1,21 @@
+
+<div class="page-header">
+    <h1>{% if num_songs %}{{ num_songs }}{% else %}0{% endif %} songs saved. </h1>
+    <p><a href="{{ url_for('see_all') }}">See all songs.</a></p>
+    <p><a href="{{ url_for('see_all_artists') }}">See all artists.</a></p>
+</div>
+
+<form method="POST">
+	{{ form.hidden_tag() }}
+	{{ form.song.label }} {{ form.song() }}
+	{{ form.artist.label }} {{ form.artist() }}
+    {{ form.album.label }} {{ form.album() }}
+	{{form.genre.label }} {{ form.genre() }}
+	{{ form.submit() }}
+</form>
+
+<div>
+{% for message in get_flashed_messages() %}
+{{ message }}
+{% endfor %}
+</div>

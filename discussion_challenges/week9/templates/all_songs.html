@@ -1,0 +1,17 @@
+<ul>
+{% for sg in all_songs %}
+<li>{{ sg[0] }} by {{ sg[1] }} - {{ sg[2] }}</li><br>
+{% endfor %}
+</ul>
+
+{% if not all_songs %}
+There are no saved favorite songs to show.
+{% endif %}
+
+<div>
+{% for message in get_flashed_messages() %} 
+<strong>*** {{ message }} ***</strong>
+{% endfor %}
+</div>
+
+<a href="{{ url_for('index')}}">Return to add a new song</a>
