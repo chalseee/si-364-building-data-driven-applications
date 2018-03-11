@@ -3,7 +3,6 @@
 ###############################
 
 ## Import statements
-# Import statements
 import os
 from flask import Flask, render_template, session, redirect, url_for, flash, request
 from flask_wtf import FlaskForm
@@ -20,7 +19,7 @@ app.use_reloader = True
 
 ## All app.config values
 app.config['SECRET_KEY'] = 'eahfpfoheqwfij'
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:icedout@localhost:5432/364"
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:icedout@localhost:5432/364midterm"
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -60,10 +59,11 @@ def get_or_create_actor(name, popularity, movie_title):
 ##################
 class Name(db.Model):
     __tablename__ = "names"
-    id = db.Column(db.Integer,primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
+    search_term = db.Column(db.String(64))
     def __repr__(self):
-        return "{} (ID: {})".format(self.name, self.id)
+        return "Name: {0} \nFavorite Genre: {1} \n\n".format(self.name, self.query)
 
 class Movie(db.Model):
     __tablename__ = "movies"
@@ -82,19 +82,14 @@ class Actor(db.Model):
     popularity = db.Column(db.Integer)
     top_movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'))
     def __repr__(self):
-        return "Actor: {0}, {1}, {2}".format(self.name, self.popularity, self.top_movie_id)
-
-class Stats(db.Model):
-    __tablename__ = "stats"
-    id = db.Column(db.Integer, primary_key=True)
-    #will finish this model later
-
+        return "Actor: {0} \nPopularity: {1} \nMovie ID:{2} \n\n".format(self.name, self.popularity, self.top_movie_id)
 
 ###################
 ###### FORMS ######
 ###################
 class NameForm(FlaskForm):
     name = StringField("Please enter your name. ", validators=[Required(), Length(min=1, max=64)])
+    query = StringField("Enter your favorite movie genre.", validators=[Required(), Length(min=1, max=64)])
     submit = SubmitField()
 
 class MovieForm(FlaskForm):
@@ -103,11 +98,7 @@ class MovieForm(FlaskForm):
 
     def validate_actor(self, field):
         if len(field.data.split(' ')) > 2:
-            raise ValidationError('Enter only an actors first and last name as query.')
-
-class StatsForm(FlaskForm):
-    submit = SubmitField()
-    #will finish this form later
+            raise ValidationError('Actor must have first and last name!')
 
 #######################
 ###### VIEW FXNS ######
@@ -115,10 +106,6 @@ class StatsForm(FlaskForm):
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
-
-@app.errorhandler(500)
-def internal_server_error(e):
-    return render_template('500.html'), 500
 
 @app.route('/', methods=['GET'])
 def home():
@@ -129,10 +116,11 @@ def home():
 def all_names():
     if request.args:
         name = request.args['name']
-        n = Name(name=name)
+        search_term = request.args['query']
+        n = Name(name=name, search_term=search_term)
         db.session.add(n)
         db.session.commit()
-    return render_template('name_example.html', names=Name.query.all())
+    return render_template('name_example.html', names=db.session.query(Name).all())
 
 @app.route('/movies', methods=['GET', 'POST'])
 def all_movies():
@@ -140,18 +128,22 @@ def all_movies():
     if request.method == "POST" and form.validate_on_submit():
         query = requests.get(url + form.actor.data.replace(" ", "+")).json()
         if query['total_results'] == 0 or query['results'][0]['known_for'] == []:
-            return render_template("500.html"), 500
+            flash("Invalid query")
+            return redirect(url_for('all_movies'))
 
         query = query['results'][0]
         movie_info = query['known_for'][0]
         get_or_create_movie(movie_info['title'], movie_info['release_date'], movie_info['overview'])
         get_or_create_actor(query['name'], query['popularity'], movie_info['title'])
+
+    errors = [v for v in form.errors.values()]
+    if len(errors) > 0:
+        flash("!!!! ERRORS IN FORM SUBMISSION - " + str(errors))
     return render_template('movies.html', form=form, movies=Movie.query.all())
 
-@app.route('/stats')
-def stats():
-    return render_template('stats.html', actors=Actor.query.all())
-
+@app.route('/actors')
+def popular_actors():
+    return render_template('actors.html', actors=Actor.query.all())
 
 ## Code to run the application...
 
