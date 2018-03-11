@@ -11,6 +11,7 @@ from wtforms.validators import Required, Length
 from flask_sqlalchemy import SQLAlchemy
 from apiclient.discovery import build
 import requests, json
+import themoviedb_info
 
 ## App setup code
 app = Flask(__name__)
@@ -18,7 +19,7 @@ app.debug = True
 app.use_reloader = True
 
 ## All app.config values
-app.config['SECRET_KEY'] = 'eahfpfoheqwfij'
+app.config['SECRET_KEY'] = 'eahfpfoheqwfjithgojwoijoerjfi7367239ur 89z23=--=-ij'
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:icedout@localhost:5432/364midterm"
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -30,7 +31,6 @@ db = SQLAlchemy(app)
 ######## HELPER FXNS (If any) ########
 ######################################
 url = "https://api.themoviedb.org/3/search/person?api_key=a55c954f4c5cb767bed20229fc253426&query="
-
 def get_or_create_movie(title, release_date, description):
     movie = db.session.query(Movie).filter_by(title=title).first()
     if movie:
@@ -109,7 +109,7 @@ class TV(db.Model):
 ###################
 class NameForm(FlaskForm):
     name = StringField("Please enter your name. ", validators=[Required(), Length(min=1, max=64)])
-    query = StringField("Enter your favorite movie genre.", validators=[Required(), Length(min=1, max=64)])
+    query = StringField("What's your favorite TV show?", validators=[Required(), Length(min=1, max=64)])
     submit = SubmitField()
 
 class MovieForm(FlaskForm):
@@ -170,7 +170,8 @@ def tv_shows():
     queries = db.session.query(Name).all()
     for q in queries:
         if q.search_term != "":
-            info = requests.get("https://api.themoviedb.org/3/search/tv?api_key=a55c954f4c5cb767bed20229fc253426&query=" + q.search_term).json()['results'][0]
+            url = "https://api.themoviedb.org/3/search/tv?api_key=a55c954f4c5cb767bed20229fc253426&query="
+            info = requests.get(url + q.search_term).json()['results'][0]
             get_or_create_tv(tv_show_name=info['name'], first_air_date=info['first_air_date'], overview=info['overview'])
     return render_template("tv_shows.html", tv=TV.query.all())
 
