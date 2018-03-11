@@ -54,6 +54,16 @@ def get_or_create_actor(name, popularity, movie_title):
         db.session.commit()
         print(actor)
 
+def get_or_create_tv(tv_show_name, first_air_date, overview):
+    tv = db.session.query(TV).filter_by(tv_show_name=tv_show_name).first()
+    if tv:
+        print(tv)
+    else:
+        tv = TV(tv_show_name=tv_show_name, first_air_date=first_air_date, overview=overview)
+        db.session.add(tv)
+        db.session.commit()
+        print(tv)
+
 ##################
 ##### MODELS #####
 ##################
@@ -84,6 +94,16 @@ class Actor(db.Model):
     def __repr__(self):
         return "Actor: {0} \nPopularity: {1} \nMovie ID:{2} \n\n".format(self.name, self.popularity, self.top_movie_id)
 
+class TV(db.Model):
+    __tablename__ = "tvshows"
+    id = db.Column(db.Integer, primary_key=True)
+    tv_show_name = db.Column(db.String(64))
+    first_air_date = db.Column(db.String(10))
+    overview = db.Column(db.String(2000))
+    def __repr__(self):
+        return "TV Show: {0} \nFirst Air Date: {1}\n Description: {2}".format(self.tv_show_name, self.first_air_date, self.overview)
+
+
 ###################
 ###### FORMS ######
 ###################
@@ -97,7 +117,7 @@ class MovieForm(FlaskForm):
     submit = SubmitField()
 
     def validate_actor(self, field):
-        if len(field.data.split(' ')) > 2:
+        if len(field.data.split(' ')) < 2:
             raise ValidationError('Actor must have first and last name!')
 
 #######################
@@ -128,7 +148,7 @@ def all_movies():
     if request.method == "POST" and form.validate_on_submit():
         query = requests.get(url + form.actor.data.replace(" ", "+")).json()
         if query['total_results'] == 0 or query['results'][0]['known_for'] == []:
-            flash("Invalid query")
+            flash("Invalid query! Try again.")
             return redirect(url_for('all_movies'))
 
         query = query['results'][0]
@@ -144,6 +164,15 @@ def all_movies():
 @app.route('/actors')
 def popular_actors():
     return render_template('actors.html', actors=Actor.query.all())
+
+@app.route('/tv_shows')
+def tv_shows():
+    queries = db.session.query(Name).all()
+    for q in queries:
+        if q.search_term != "":
+            info = requests.get("https://api.themoviedb.org/3/search/tv?api_key=a55c954f4c5cb767bed20229fc253426&query=" + q.search_term).json()['results'][0]
+            get_or_create_tv(tv_show_name=info['name'], first_air_date=info['first_air_date'], overview=info['overview'])
+    return render_template("tv_shows.html", tv=TV.query.all())
 
 ## Code to run the application...
 
