@@ -11,7 +11,6 @@ from wtforms.validators import Required, Length
 from flask_sqlalchemy import SQLAlchemy
 from apiclient.discovery import build
 import requests, json
-import themoviedb_info
 
 ## App setup code
 app = Flask(__name__)
