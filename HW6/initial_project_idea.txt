@@ -1,0 +1,1 @@
+This application will allow users to register and login, save their favorite words, definitions, and other word-related information. Users can see their own words and definitions and word-related information, but not other people's.
