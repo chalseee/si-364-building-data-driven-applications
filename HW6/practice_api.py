@@ -14,9 +14,15 @@ programming_dict = oxford_dict_request(app_id, app_key, base_url, "programming")
 cool_dict = oxford_dict_request(app_id, app_key, base_url, "cool")
 bark_dict = oxford_dict_request(app_id, app_key, base_url, "bark")
 
-#ex, programming_dict:
+#ex of me using the data, using the programming word inforamtion dictionary:
 word = programming_dict['word']
 language = programming_dict['language']
-print(word, language, programming_dict)
+phonetic_spelling = programming_dict['lexicalEntries'][0]['pronunciations'][0]['phoneticSpelling']
+definitions = programming_dict['lexicalEntries'][0]['entries'][0]['senses']
+definition_list = []
+for d in definitions:
+    definition_list.append(d['definitions'])
 
-#TODO: invoke the fxn a couple of times to show how i will use it in the final assignment
+#this data will be used in my application to populate the contents of the different models in my database, for the Word, Definition, and PartOfSpeech models. Then this information will be displayed and populated in different ways throughout the app.
+
+#based on a user's input to a form, this function will be invoked to get a dictionary of information about the user's entered word.
