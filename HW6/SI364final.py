@@ -73,7 +73,7 @@ class PartOfSpeech(db.Model):
     part_of_speech = db.Column(db.String(32))
 
 #Form classes will go here
-
+# -->TBD
 
 #View functions - all include the base navigation menu
 @app.errorhandler(404)
@@ -104,28 +104,28 @@ def secret():
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    pass #homepage. should render a login form as well as a menu to view all other pages in app.
+    pass #homepage. should render a login form as well as a menu to view all other pages in app. If submitted correctly, it will take you to the your_words route and flash a success message. otherwise, it will redirect to this page.
+        #page doesn't require login.
 
 @app.route('/all_users_words')
-def all_words(): #should render a page that shows information about all words that have been added on this app.
-    pass #doesnt require login.
+def all_words(): #should render a page that shows information about all words that have been added on this app. it will list all information in the words table.
+    pass #page doesn't require login.
 
 @login_required
 @app.route('/delete/<word_id>')
-def delete(): #should allow the user to delete a word from their list of words.
-    pass #requires login
+def delete(): #should allow the user to delete a word from their list of words. this will remove the entry from the words table, but not it's associated definition(s). will submit/route to the your_words page.
+    pass #page requires login
 
 @login_required
 @app.route('/update/<word_id>')
-def update(): #should allow the user to change a word from their list of words and then run a get_or_create fxn to update possible new parts of speech or definitions
-    pass #requires login
+def update(): #should allow the user to change a word from their list of words and then run a get_or_create fxn to update possible new parts of speech or definition(s). will submit/route to the your_words page.
+    pass #page requires login
 
 @login_required
 @app.route('/your_words')
-def your_words(): #displays all words that the user has added to their collection. also displays a form to enter a word. page will update to show this word in addition to all past ones once the form is submitted.
-    pass #requires login
-
-
+def your_words(): #displays all words that the user has added to their collection. also displays a form to enter a word. page will update to show this word in addition to all past ones once the form is submitted correctly. otherwise, it will still redirect to this page, but flash an error message.
+    pass #page requires login
+    
 
 if __name__ == "__main__":
     db.create_all()
