@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>{% if num_tweets %}{{ num_tweets }}{% else %}0{% endif %} possible tweets saved. </h1>
+</div>
+
+<div>
+<form method="POST">
+	{{ form.hidden_tag() }}
+	{{ form.text.label }} {{ form.text() }}
+	{{ form.username.label }} {{ form.username() }}
+    {{ form.display_name.label }} {{ form.display_name() }}
+	{{ form.submit() }}
+</form>
+</div>
+
+<br>
+<strong><p>NOTE: Anything you submit here will be visible to instructors / the entire class / the public. Don't put anything here that you wouldn't tell the whole class. Fair warning.</strong> <i>(Jackie can also delete anything and remove this from the internet...)</i></p><br>
+
+<div>
+{% for message in get_flashed_messages() %}
+    <strong>{{ message }}</strong>
+{% endfor %}
+</div>
+
+{% endblock %}
