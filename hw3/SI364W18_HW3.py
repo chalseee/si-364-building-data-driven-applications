@@ -20,7 +20,7 @@ app.config['SECRET_KEY'] = 'eahfpfoheqwfij'
 ## TODO 364: Create a database in postgresql in the code line below, and fill in your app's database URI. It should be of the format: postgresql://localhost/YOUR_DATABASE_NAME
 
 ## Your final Postgres database should be your uniqname, plus HW3, e.g. "jczettaHW3" or "maupandeHW3"
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:icedout@localhost:5432/chalseoHW3"
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://localhost/chalseoHW3"
 
 ## Provided:
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
@@ -156,6 +156,7 @@ def index():
     ## If there is, save it in a variable: user
     ## Or if there is not, then create one and add it to the database
     if form.validate_on_submit():
+        print(form.data)
         user_name = form.username.data
         displayname = form.display_name.data
         txt = form.text.data

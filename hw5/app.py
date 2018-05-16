@@ -175,10 +175,6 @@ def delete(lst):
     # And should redirect the user to the page showing all the todo lists
     # HINT: Compare against what you've done for updating and class notes -- the goal here is very similar, and in some ways simpler.
 
-@app.route('/all_items')
-def all_items():
-    return render_template('all_items.html', items=TodoItem.query.all())
-
 if __name__ == "__main__":
     db.create_all()
     manager.run()
